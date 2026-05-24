@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Media;
 
 namespace CyberChatBot_GUI
 {
@@ -31,27 +32,30 @@ namespace CyberChatBot_GUI
         // Displays welcome message and ASCII-style banner when the application starts
         // Introduces the user to available cybersecurity topics
         private void Form1_Load(object sender, EventArgs e)
-       
-        {
-            richTextBox1.AppendText(
-                " ===========================\n" +
-                "CYBER SECURITY CHATBOT\n" +
-                " ===========================\n\n" +
-                "Bot: Hi there user! Welcome to Cybersecurity Chatbot!\n" +
-                "You can ask me about:\n" +
-                "1. Password safety\n" +
-                "2. Phishing scams\n" +
-                "3. Privacy tips\n\n Please communicate in words or sentences!\n\n "+
+
+        { SoundPlayer player = new SoundPlayer(Application.StartupPath + "\\part2.wav");
+        player.Play();
+            {
+                richTextBox1.AppendText(
+                    " ===========================\n" +
+                    "CYBER SECURITY CHATBOT\n" +
+                    " ===========================\n\n" +
+                    "Bot: Hi there user! Welcome to Cybersecurity Chatbot!\n" +
+                    "You can ask me about:\n" +
+                    "1. Password safety\n" +
+                    "2. Phishing scams\n" +
+                    "3. Privacy tips\n\n Please communicate in words or sentences!\n\n " +
 
 
-                "How to interact with me:\n" +
-                "Type a topic like 'password', 'phishing', or 'privacy`.\n" +
-                "You can also ask for more tips by typing 'tell me more' or 'another tip'.\n" +
-                "Type 'help' if you need guidance on what to ask.\n" +
-                "To end the conversation, type 'exit' or 'quit'\n\n"+
+                    "How to interact with me:\n" +
+                    "Type a topic like 'password', 'phishing', or 'privacy`.\n" +
+                    "You can also ask for more tips by typing 'tell me more' or 'another tip'.\n" +
+                    "Type 'help' if you need guidance on what to ask.\n" +
+                    "To end the conversation, type 'exit' or 'quit'\n\n" +
 
-                "Im here to help you stay safe online, so feel free to ask me anything about cybersecurity!"
-            );
+                    "Im here to help you stay safe online, so feel free to ask me anything about cybersecurity!"
+                );
+            }
         }
 
         // Handles user input when the Send button is clicked
