@@ -12,9 +12,10 @@ using System.Media;
 namespace CyberChatBot_GUI
 {
     public partial class Form1 : Form
-    {
+    {   //Stores the current chatbot topic to support follow up conversations.
         string currentTopic = "";
         delegate string ChatbotResponse(string input);
+        //Generates random phishing awareness tips for users
         Random random = new Random();
         // Cybersecurity Awareness Chatbot GUI
         // This application provides users with cybersecurity tips
@@ -49,7 +50,7 @@ namespace CyberChatBot_GUI
 
                     "How to interact with me:\n" +
                     "Type a topic like 'password', 'phishing', or 'privacy`.\n" +
-                    "Example questions you can ask:\n" +
+                    "Example questions you can ask:\n" +// Displays additional guidance !!
                     "- How do I create a strong password?\n" +
                     "- What is phishing?\n" +
                     "- How can I protect my privacy online?\n\n" +
@@ -124,7 +125,7 @@ namespace CyberChatBot_GUI
 
         private string GetResponse(string input)
         
-        {
+        {  // Handles user mood detection for support
             string userMood = "";
 
             // ---------------- SENTIMENT DETECTION (NO RETURNS HERE) ----------------
