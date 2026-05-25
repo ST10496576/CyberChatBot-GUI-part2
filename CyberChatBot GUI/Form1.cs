@@ -49,6 +49,10 @@ namespace CyberChatBot_GUI
 
                     "How to interact with me:\n" +
                     "Type a topic like 'password', 'phishing', or 'privacy`.\n" +
+                    "Example questions you can ask:\n" +
+                    "- How do I create a strong password?\n" +
+                    "- What is phishing?\n" +
+                    "- How can I protect my privacy online?\n\n" +
                     "You can also ask for more tips by typing 'tell me more' or 'another tip'.\n" +
                     "Type 'help' if you need guidance on what to ask.\n" +
                     "To end the conversation, type 'exit' or 'quit'\n\n" +
