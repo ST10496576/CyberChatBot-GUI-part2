@@ -109,7 +109,11 @@ namespace CyberChatBot_GUI
 {
     "Be cautious of emails asking for personal details.",
     "Always verify the sender before clicking links.",
-    "Scammers often create urgency to trick users."
+    "Scammers often create urgency to trick users.",
+    "Never download attachments from unknown senders.",
+    "Check for spelling mistakes in suspicious emails.",
+    "Banks usually do not ask for passwords through email.",
+    
 };
 
         // duplicate Random/return removed (phishingResponses and rand are declared above)
@@ -239,7 +243,8 @@ namespace CyberChatBot_GUI
                 string response =
                     "Privacy means protecting your personal information online. " +
                     "Always review app permissions and limit what you share. " +
-                    "Turn off location access when not needed.";
+                    "Turn off location access when not needed."+ 
+                    "";
 
                 if (userMood == "curious")
                     response = "Great curiosity! Let’s explore this together. " + response;
