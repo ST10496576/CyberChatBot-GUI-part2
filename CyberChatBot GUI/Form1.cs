@@ -84,11 +84,12 @@ namespace CyberChatBot_GUI
             // handles exit/quit commands immediately
             if (input == "exit" || input == "quit")
             {
-                richTextBox1.AppendText("Bot: Goodbye! Stay safe online!\n\n");
-                // scroll to the latest message
+                richTextBox1.AppendText("Bot: Goodbye! Thank you for using Cyber Security Chatbot. Stay safe online!\n\n");
+
                 richTextBox1.SelectionStart = richTextBox1.Text.Length;
                 richTextBox1.ScrollToCaret();
                 richTextBox1.Refresh();
+
                 Application.Exit();
                 return;
             }
