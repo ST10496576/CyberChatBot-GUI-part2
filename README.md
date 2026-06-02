@@ -80,6 +80,3 @@ Version History
 * v2.0 — NLP simulation and activity logging
 * v3.0 — Quiz system, task assistant, and full integration
 
-* v1.0 — Basic chatbot with keyword responses
-* v2.0 — NLP simulation and activity logging
-* v3.0 — Quiz system, task assistant, and full integration
