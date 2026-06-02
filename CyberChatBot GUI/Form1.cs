@@ -11,6 +11,13 @@ using System.Media;
 
 namespace CyberChatBot_GUI
 {
+    class Question
+    { public string Text { get; set; }
+        public string[] Options { get; set; }
+        public int CorrectAnswer { get; set; }
+    }
+
+
     public partial class Form1 : Form
     {   //Stores the current chatbot topic to support follow up conversations.
         string currentTopic = "";
@@ -18,10 +25,62 @@ namespace CyberChatBot_GUI
         //Generates random phishing awareness tips for users
         Random random = new Random();
         List<string> activityLog = new List<string>();
+        // Quiz state
+        List<Question> quizQuestions = new List<Question>();
+        int currentQuestionIndex = 0;
+        int score = 0;
+        bool quizActive = false;
+        private void LoadQuiz()
+        {
+            quizQuestions = new List<Question>()
+    {
+        new Question
+        {
+            Text = "What is phishing?",
+            Options = new string[]
+            {
+                "A safe website",
+                "A scam to steal information",
+                "A password manager",
+                "A browser update"
+            },
+            CorrectAnswer = 1
+        },
+
+        new Question
+        {
+            Text = "What should you do with a suspicious email?",
+            Options = new string[]
+            {
+                "Open it",
+                "Click links",
+                "Report it",
+                "Reply with info"
+            },
+            CorrectAnswer = 2
+        },
+
+        new Question
+        {
+            Text = "A strong password should:",
+            Options = new string[]
+            {
+                "Be short",
+                "Be reused everywhere",
+                "Include letters, numbers, symbols",
+                "Be your name"
+            },
+            CorrectAnswer = 2
+        }
+    };
+        }
+
+       
         // Cybersecurity Awareness Chatbot GUI
         // This application provides users with cybersecurity tips
         // based on keyword recognition, sentiment detection, and conversational flow.
         // It is designed using Windows Forms and demonstrates event-driven programming.
+
         public Form1()
         {
             InitializeComponent();
@@ -127,11 +186,86 @@ private void LogActivity(string action)
         {
             activityLog.Add(DateTime.Now.ToString("g") +" - " + action);
         }
+        private string ShowQuestion()
+        {
+            if (currentQuestionIndex >= quizQuestions.Count)
+            {
+                quizActive = false;
+
+                return "Quiz finished!\nYour score: " + score + "/" + quizQuestions.Count;
+            }
+            Question q = quizQuestions[currentQuestionIndex];
+
+            string text =
+                q.Text + "\n\n" +
+                "A) " + q.Options[0] + "\n" +
+                "B) " + q.Options[1] + "\n" +
+                "C) " + q.Options[2] + "\n" +
+                "D) " + q.Options[3] + "\n\n" +
+                "Type A, B, C or D";
+
+            return text;
+        }
+
         // duplicate Random/return removed (phishingResponses and rand are declared above)
 
         private string GetResponse(string input)
-        
-        {  // Handles user mood detection for support
+        {
+            // Quiz answer handling - must be at the top of GetResponse
+            if (quizActive)
+            {
+                int userAnswer = -1;
+
+                if (input == "a") userAnswer = 0;
+                else if (input == "b") userAnswer = 1;
+                else if (input == "c") userAnswer = 2;
+                else if (input == "d") userAnswer = 3;
+
+                if (userAnswer != -1)
+                {
+                    string resultMsg;
+                    if (userAnswer == quizQuestions[currentQuestionIndex].CorrectAnswer)
+                    {
+                        score++;
+                        LogActivity("Quiz answer correct");
+                        resultMsg = "Correct! Your current score: " + score + "/" + (currentQuestionIndex + 1);
+                    }
+                    else
+                    {
+                        LogActivity("Quiz answer incorrect");
+                        resultMsg = "Incorrect. The correct answer was: " +
+                                    (char)('A' + quizQuestions[currentQuestionIndex].CorrectAnswer) + ") " +
+                                    quizQuestions[currentQuestionIndex].Options[quizQuestions[currentQuestionIndex].CorrectAnswer] +
+                                    "\nYour current score: " + score + "/" + (currentQuestionIndex + 1);
+                    }
+
+                    // advance to next question
+                    currentQuestionIndex++;
+
+                    // if quiz finished
+                    if (currentQuestionIndex >= quizQuestions.Count)
+                    {
+                        quizActive = false;
+                        return resultMsg + "\n\nQuiz finished!\nYour score: " + score + "/" + quizQuestions.Count;
+                    }
+
+                    // show next question
+                    return resultMsg + "\n\n" + ShowQuestion();
+                }
+                // if input wasn't an answer, prompt user to answer
+                return "Please answer with A, B, C or D.";
+            }
+
+            if (input.Contains("quiz") || input.Contains("start quiz"))
+            {
+                LoadQuiz();
+                quizActive = true;
+                currentQuestionIndex = 0;
+                score = 0;
+
+                return ShowQuestion();
+            }
+            // Handles user mood detection for support
             string userMood = "";
 
             // ---------------- SENTIMENT DETECTION (NO RETURNS HERE) ----------------
