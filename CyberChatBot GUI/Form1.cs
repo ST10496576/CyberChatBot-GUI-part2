@@ -17,6 +17,7 @@ namespace CyberChatBot_GUI
         delegate string ChatbotResponse(string input);
         //Generates random phishing awareness tips for users
         Random random = new Random();
+        List<string> activityLog = new List<string>();
         // Cybersecurity Awareness Chatbot GUI
         // This application provides users with cybersecurity tips
         // based on keyword recognition, sentiment detection, and conversational flow.
@@ -84,6 +85,7 @@ namespace CyberChatBot_GUI
             // handles exit/quit commands immediately
             if (input == "exit" || input == "quit")
             {
+                LogActivity("User requested to exit the application");
                 richTextBox1.AppendText("Bot: Goodbye! Thank you for using Cyber Security Chatbot. Stay safe online!\n\n");
 
                 richTextBox1.SelectionStart = richTextBox1.Text.Length;
@@ -121,7 +123,10 @@ namespace CyberChatBot_GUI
     "Banks usually do not ask for passwords through email.",
     
 };
-
+private void LogActivity(string action)
+        {
+            activityLog.Add(DateTime.Now.ToString("g") +" - " + action);
+        }
         // duplicate Random/return removed (phishingResponses and rand are declared above)
 
         private string GetResponse(string input)
@@ -166,9 +171,29 @@ namespace CyberChatBot_GUI
                 return "Great curiosity! Let’s explore cybersecurity together step by step.You can continue by asking about password safety, phishing scams, privacy tips or type 'help' for more options.";
 
             }
+
+            if (input.Contains("show activity log") ||
+    input.Contains("what have you done for me") ||
+    input.Contains("activity log"))
+            {
+                if (activityLog.Count == 0)
+                    return "No activity recorded yet.";
+
+                string logText = "Recent Activity:\n\n";
+
+                foreach (string log in activityLog.Skip(Math.Max(0, activityLog.Count - 10)))
+                {
+                    logText += "- " + log + "\n";
+                }
+
+                return logText;
+            }
+
+
             // ---------------- HELP ----------------
             if (input.Contains("help"))
             {
+                LogActivity("User requested help");
                 return "I’m here to help you stay safe online. " +
                        "You can ask about password safety, phishing scams, or privacy tips. " +
                        "Try typing 'password', 'phishing', or 'privacy'.";
@@ -181,12 +206,16 @@ namespace CyberChatBot_GUI
                 {
                     return "More password tips: Use 8–12+ characters with uppercase, lowercase, numbers and symbols. " +
                            "Avoid personal details and never reuse passwords.";
+
+                 
+
                 }
 
                 if (currentTopic == "phishing")
                 {
                     return "More phishing tips: Always check sender emails carefully. " +
                            "If something feels urgent or suspicious, do not click links.";
+                    
                 }
 
                 if (currentTopic == "privacy")
@@ -201,6 +230,7 @@ namespace CyberChatBot_GUI
             if (input.Contains("password"))
             {
                 currentTopic = "password";
+                LogActivity("User requested about password information");
 
                 string response =
                     "Strong passwords protect your accounts from hackers. " +
@@ -221,7 +251,7 @@ namespace CyberChatBot_GUI
             if (input.Contains("phishing") || input.Contains("scam"))
             {
                 currentTopic = "phishing";
-
+                LogActivity("User requested about phishing information");
                 string baseResponse =
                     "Phishing scams are fake messages designed to trick you into giving personal information. " +
                     "They often look like emails or SMS from trusted companies. " +
@@ -245,7 +275,7 @@ namespace CyberChatBot_GUI
             if (input.Contains("privacy"))
             {
                 currentTopic = "privacy";
-
+                LogActivity("User requested about privacy information");
                 string response =
                     "Privacy means protecting your personal information online. " +
                     "Always review app permissions and limit what you share. " +
