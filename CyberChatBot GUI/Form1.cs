@@ -17,6 +17,15 @@ namespace CyberChatBot_GUI
         public int CorrectAnswer { get; set; }
     }
 
+    class TaskItem
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Reminder { get; set; }
+        public bool Completed { get; set; }
+        public bool TwoFactorEnabled { get; set; }
+    }
+
 
     public partial class Form1 : Form
     {   //Stores the current chatbot topic to support follow up conversations.
@@ -30,6 +39,14 @@ namespace CyberChatBot_GUI
         int currentQuestionIndex = 0;
         int score = 0;
         bool quizActive = false;
+        // Tasks
+        List<TaskItem> tasks = new List<TaskItem>();
+        bool waitingForTaskTitle = false;
+        bool waitingForTaskDescription = false;
+        bool waitingForReminder = false;
+        bool tempTaskTwoFactor = false;
+        string tempTaskTitle = "";
+        string tempTaskDescription = "";
         private void LoadQuiz()
         {
             quizQuestions = new List<Question>()
@@ -127,9 +144,9 @@ namespace CyberChatBot_GUI
         // Displays user message, processes response, and updates chat window
         private void button1_Click_1(object sender, EventArgs e)
         {
-            string input = textBox1.Text.ToLower();
+            string rawInput = textBox1.Text;
 
-            if (string.IsNullOrWhiteSpace(input))
+            if (string.IsNullOrWhiteSpace(rawInput))
             {
                 richTextBox1.AppendText("Bot: Please type something.\n\n");
                 // makes sure appended text is scrolled into view
@@ -139,10 +156,11 @@ namespace CyberChatBot_GUI
                 return;
             }
 
-            richTextBox1.AppendText("You: " + input + "\n");
+            richTextBox1.AppendText("You: " + rawInput + "\n");
 
             // handles exit/quit commands immediately
-            if (input == "exit" || input == "quit")
+            string inputNormForExit = rawInput.Trim().ToLowerInvariant();
+            if (inputNormForExit == "exit" || inputNormForExit == "quit")
             {
                 LogActivity("User requested to exit the application");
                 richTextBox1.AppendText("Bot: Goodbye! Thank you for using Cyber Security Chatbot. Stay safe online!\n\n");
@@ -157,7 +175,7 @@ namespace CyberChatBot_GUI
 
             // Included the class-level delegate as requested
             ChatbotResponse responseDelegate = GetResponse;
-            string response = responseDelegate(input);
+            string response = responseDelegate(rawInput);
 
             richTextBox1.AppendText("Bot: " + response + "\n\n");
             // scroll to the latest message
@@ -211,15 +229,115 @@ private void LogActivity(string action)
 
         private string GetResponse(string input)
         {
+            // preserve raw for titles/descriptions
+            string raw = input ?? string.Empty;
+            string norm = raw.Trim().ToLowerInvariant();
+            // --- Task conversational flow (title, description, 2FA, reminder) ---
+            // start add-task
+            if (norm == "add task" || norm.StartsWith("add task ") || norm == "add")
+            {
+                tempTaskTwoFactor = false;
+                waitingForTaskTitle = true;
+                return "Please enter the task title. (Type 'enable 2fa' to enable two-factor for this task)";
+            }
+
+            if (waitingForTaskTitle)
+            {
+                if (norm == "enable 2fa")
+                {
+                    tempTaskTwoFactor = true;
+                    return "Two-factor authentication will be enabled for this task. Now enter the task title.";
+                }
+
+                tempTaskTitle = raw.Trim();
+                waitingForTaskTitle = false;
+                waitingForTaskDescription = true;
+                return "Please enter the task description. (Type 'enable 2fa' to enable two-factor for this task)";
+            }
+
+            if (waitingForTaskDescription)
+            {
+                if (norm == "enable 2fa")
+                {
+                    tempTaskTwoFactor = true;
+                    return "Two-factor authentication will be enabled. Now enter the task description.";
+                }
+
+                tempTaskDescription = raw.Trim();
+                waitingForTaskDescription = false;
+                waitingForReminder = true;
+                return "Would you like a reminder? Type number of days (e.g. '3') or 'none'.";
+            }
+
+            if (waitingForReminder)
+            {
+                string reminder;
+                if (norm == "none")
+                {
+                    reminder = "none";
+                }
+                else
+                {
+                    int days;
+                    if (int.TryParse(norm, out days) && days > 0)
+                        reminder = days + " days";
+                    else
+                        return "Please enter a valid number of days for the reminder, or 'none'.";
+                }
+
+                var task = new TaskItem
+                {
+                    Title = tempTaskTitle,
+                    Description = tempTaskDescription,
+                    Reminder = reminder,
+                    Completed = false,
+                    TwoFactorEnabled = tempTaskTwoFactor
+                };
+
+                tasks.Add(task);
+                LogActivity("Task added: " + task.Title);
+
+                // reset temps
+                waitingForReminder = false;
+                tempTaskTwoFactor = false;
+                tempTaskTitle = string.Empty;
+                tempTaskDescription = string.Empty;
+
+                return "Task added successfully! Title: " + task.Title + ", 2FA: " + (task.TwoFactorEnabled ? "enabled" : "disabled") + ", Reminder: " + task.Reminder + ".";
+            }
+
+            // view tasks
+            if (input.Contains("view tasks") || input == "show tasks" || input == "tasks")
+            {
+                if (tasks.Count == 0)
+                    return "No tasks available.";
+
+                string taskList = "Tasks:\n\n";
+                foreach (var t in tasks)
+                {
+                    taskList += "Title: " + t.Title + "\n" +
+                                "Description: " + t.Description + "\n" +
+                                "2FA Enabled: " + (t.TwoFactorEnabled ? "Yes" : "No") + "\n" +
+                                "Reminder: " + t.Reminder + "\n" +
+                                "Completed: " + t.Completed + "\n\n";
+                }
+
+                return taskList;
+            }
+
             // Quiz answer handling - must be at the top of GetResponse
             if (quizActive)
             {
                 int userAnswer = -1;
 
-                if (input == "a") userAnswer = 0;
-                else if (input == "b") userAnswer = 1;
-                else if (input == "c") userAnswer = 2;
-                else if (input == "d") userAnswer = 3;
+                if (input.Length > 0)
+                {
+                    char c = input[0];
+                    if (c == 'a') userAnswer = 0;
+                    else if (c == 'b') userAnswer = 1;
+                    else if (c == 'c') userAnswer = 2;
+                    else if (c == 'd') userAnswer = 3;
+                }
 
                 if (userAnswer != -1)
                 {
