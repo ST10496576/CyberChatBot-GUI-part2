@@ -41,6 +41,7 @@ namespace CyberChatBot_GUI
         bool quizActive = false;
         // Tasks
         List<TaskItem> tasks = new List<TaskItem>();
+        string taskFile = "tasks.txt";
         bool waitingForTaskTitle = false;
         bool waitingForTaskDescription = false;
         bool waitingForReminder = false;
@@ -113,6 +114,7 @@ namespace CyberChatBot_GUI
 
         { SoundPlayer player = new SoundPlayer(Application.StartupPath + "\\part2.wav");
         player.Play();
+            LoadTasks();
             {
                 richTextBox1.AppendText(
                     " ===========================\n" +
@@ -203,6 +205,51 @@ namespace CyberChatBot_GUI
 private void LogActivity(string action)
         {
             activityLog.Add(DateTime.Now.ToString("g") +" - " + action);
+        }
+
+        private void SaveTasks()
+        {
+            List<string> lines = new List<string>();
+
+            foreach (var t in tasks)
+            {
+                lines.Add(
+                    t.Title + "|" +
+                    t.Description + "|" +
+                    t.Reminder + "|" +
+                    t.Completed + "|" +
+                    t.TwoFactorEnabled
+                );
+            }
+
+            System.IO.File.WriteAllLines(taskFile, lines);
+        }
+
+        private void LoadTasks()
+        {
+            if (!System.IO.File.Exists(taskFile))
+                return;
+
+            string[] lines = System.IO.File.ReadAllLines(taskFile);
+
+            tasks.Clear();
+
+            foreach (string line in lines)
+            {
+                string[] parts = line.Split('|');
+
+                if (parts.Length == 5)
+                {
+                    tasks.Add(new TaskItem
+                    {
+                        Title = parts[0],
+                        Description = parts[1],
+                        Reminder = parts[2],
+                        Completed = bool.Parse(parts[3]),
+                        TwoFactorEnabled = bool.Parse(parts[4])
+                    });
+                }
+            }
         }
         private string ShowQuestion()
         {
@@ -295,34 +342,88 @@ private void LogActivity(string action)
                 };
 
                 tasks.Add(task);
+
+                // persist tasks
+                SaveTasks();
+
                 LogActivity("Task added: " + task.Title);
 
-                // reset temps
+                // RESET STATE (IMPORTANT)
+                waitingForTaskTitle = false;
+                waitingForTaskDescription = false;
                 waitingForReminder = false;
-                tempTaskTwoFactor = false;
                 tempTaskTitle = string.Empty;
                 tempTaskDescription = string.Empty;
+                tempTaskTwoFactor = false;
 
                 return "Task added successfully! Title: " + task.Title + ", 2FA: " + (task.TwoFactorEnabled ? "enabled" : "disabled") + ", Reminder: " + task.Reminder + ".";
             }
 
-            // view tasks
-            if (input.Contains("view tasks") || input == "show tasks" || input == "tasks")
+            // view / complete / delete tasks (use normalized input 'norm')
+            if (norm.Contains("view tasks") || norm == "tasks")
             {
                 if (tasks.Count == 0)
                     return "No tasks available.";
 
-                string taskList = "Tasks:\n\n";
-                foreach (var t in tasks)
+                string output = "TASK LIST:\n\n";
+
+                for (int i = 0; i < tasks.Count; i++)
                 {
-                    taskList += "Title: " + t.Title + "\n" +
-                                "Description: " + t.Description + "\n" +
-                                "2FA Enabled: " + (t.TwoFactorEnabled ? "Yes" : "No") + "\n" +
-                                "Reminder: " + t.Reminder + "\n" +
-                                "Completed: " + t.Completed + "\n\n";
+                    var t = tasks[i];
+
+                    output +=
+                        (i + 1) + ". " + t.Title + "\n" +
+                        "   Description: " + t.Description + "\n" +
+                        "   2FA: " + (t.TwoFactorEnabled ? "Enabled" : "Disabled") + "\n" +
+                        "   Reminder: " + t.Reminder + "\n" +
+                        "   Status: " + (t.Completed ? "Completed" : "Pending") + "\n\n";
                 }
 
-                return taskList;
+                return output;
+            }
+
+            if (norm.Contains("complete task"))
+            {
+                int index;
+
+                if (int.TryParse(norm.Replace("complete task", "").Trim(), out index))
+                {
+                    index--; // user starts from 1, list starts from 0
+
+                    if (index >= 0 && index < tasks.Count)
+                    {
+                        tasks[index].Completed = true;
+                        SaveTasks();
+                        LogActivity("Task completed: " + tasks[index].Title);
+
+                        return "Task marked as completed: " + tasks[index].Title;
+                    }
+                }
+
+                return "Please type: complete task 1, complete task 2, etc.";
+            }
+
+            if (norm.Contains("delete task"))
+            {
+                int index;
+
+                if (int.TryParse(norm.Replace("delete task", "").Trim(), out index))
+                {
+                    index--;
+
+                    if (index >= 0 && index < tasks.Count)
+                    {
+                        string removed = tasks[index].Title;
+                        tasks.RemoveAt(index);
+
+                        SaveTasks();
+                        LogActivity("Task deleted: " + removed);
+
+                        return "Task deleted: " + removed;
+                    }
+                }
+
+                return "Please type: delete task 1, delete task 2, etc.";
             }
 
             // Quiz answer handling - must be at the top of GetResponse
