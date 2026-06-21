@@ -1,67 +1,82 @@
-# CyberChatBot GUI
-Project Overview
-This project is a Windows Forms-based chatbot application designed to educate users about basic cybersecurity concepts. The chatbot interacts with users through a graphical user interface and provides responses based on keyword recognition, sentiment detection, and conversational flow.
+Cybersecurity Awareness Chatbot
 
-The goal of the application is to simulate a simple intelligent assistant that helps users learn about staying safe online.
+A Windows Forms chatbot application designed to educate users about cybersecurity concepts through interactive responses, a quiz system, task management, and activity tracking.
+
 
 Features
 
-1. Graphical User Interface (GUI)
-- Built using Windows Forms (C#)
-- Includes a chat display window, input textbox, and send button
-- Styled interface with improved colours and layout for better user experience
+* Chatbot with keyword-based response system
+* Password security guidance and best practices
+* Phishing awareness tips
+* NLP simulation using keyword detection (Contains() logic)
+* Cybersecurity quiz game with scoring and feedback
+* Activity log that records user actions (quiz attempts, tasks, chatbot interactions)
+* Task assistant system for cybersecurity reminders
+* Graphical Windows Forms interface
 
-2. Keyword Recognition
-The chatbot detects cybersecurity-related keywords and responds accordingly:
-- Password safety
-- Phishing/scams
-- Privacy protection
 
-3. Sentiment Detection
-The chatbot can detect simple user emotions such as:
-- Worried
-- Frustrated
-- Curious
+How it works
 
-It adjusts responses to be more supportive and helpful based on user sentiment.
+The chatbot processes user input using keyword detection and string matching to simulate basic natural language understanding.
 
-4. Memory Feature
-The chatbot remembers the current topic of conversation (e.g., password, phishing, privacy) and uses this information to continue relevant discussions.
+Recognised keywords include:
 
-5. Conversation Flow
-The chatbot supports follow-up inputs such as:
-- "tell me more"
-- "another tip"
+* password
+* phishing
+* privacy
+* quiz
+* task
+* help
 
-This allows for a continuous and natural conversation experience.
+The system responds with relevant cybersecurity educational content and logs key user actions.
 
-6. Random Responses
-For phishing-related queries, the chatbot randomly selects from multiple predefined responses to make interactions more dynamic.
 
-7. Delegates
-A delegate is used to handle chatbot responses, demonstrating event-driven programming and flexible method referencing.
+Quiz System
 
-8. Exit Function
-The user can end the conversation by typing:
-- "exit"
-- "quit"
+The quiz presents multiple-choice cybersecurity questions one at a time.
+Users receive immediate feedback and a final score at the end.
 
-The chatbot will respond with a goodbye message and close the application.
+Example:
+
+What is phishing?
+A) Safe website
+B) Scam to steal information
+C) Antivirus software
+D) Firewall
+
+
+Activity Log
+
+The chatbot records key actions such as:
+
+* Quiz attempts and results
+* Task creation and updates
+* User topic requests
+* Help requests
+
+Users can view the last 10 actions using:
+“show activity log”
 
 Technologies Used
-- C#
-- Windows Forms (WinForms)
-- .NET Framework
-- Visual Studio
+
+* C# (.NET Framework)
+* Windows Forms (WinForms)
+* Visual Studio
+* Git & GitHub
+* (Optional/Simulated) MySQL database structure for tasks
+
 
 How to Run the Project
-1. Open the project in Visual Studio
-2. Build the solution
-3. Run the application (Start button or F5)
-4. Type messages into the chatbot interface
 
-Author
-Cybersecurity Chatbot Project — Student Implementation for POE Part 2
+1. Open the solution in Visual Studio
+2. Restore dependencies if required
+3. Build the project
+4. Run the application (F5)
 
-Notes
-This chatbot is designed for educational purposes only and does not store real user data or connect to external services.
+
+Version History
+
+* v1.0 — Basic chatbot with keyword responses
+* v2.0 — NLP simulation and activity logging
+* v3.0 — Quiz system, task assistant, and full integration
+
