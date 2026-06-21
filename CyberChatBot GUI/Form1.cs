@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,7 +13,8 @@ using System.Media;
 namespace CyberChatBot_GUI
 {
     class Question
-    { public string Text { get; set; }
+    {
+        public string Text { get; set; }
         public string[] Options { get; set; }
         public int CorrectAnswer { get; set; }
     }
@@ -28,6 +30,7 @@ namespace CyberChatBot_GUI
 
 
     public partial class Form1 : Form
+
     {   //Stores the current chatbot topic to support follow up conversations.
         string currentTopic = "";
         delegate string ChatbotResponse(string input);
@@ -42,6 +45,8 @@ namespace CyberChatBot_GUI
         // Tasks
         List<TaskItem> tasks = new List<TaskItem>();
         string taskFile = "tasks.txt";
+        // MySQL connection string
+        private readonly string connectionString = "server=localhost;user=root;password=MySQL@2026;database=cyberchatbot;";
         bool waitingForTaskTitle = false;
         bool waitingForTaskDescription = false;
         bool waitingForReminder = false;
@@ -115,6 +120,9 @@ namespace CyberChatBot_GUI
         { SoundPlayer player = new SoundPlayer(Application.StartupPath + "\\part2.wav");
         player.Play();
             LoadTasks();
+            // optional: test the DB connection on startup (comment out if not needed)
+            //string dbTest = TestMySqlConnection();
+            //LogActivity("DB Test: " + dbTest);
             {
                 richTextBox1.AppendText(
                     " ===========================\n" +
@@ -341,9 +349,40 @@ private void LogActivity(string action)
                     TwoFactorEnabled = tempTaskTwoFactor
                 };
 
+                // persist task to MySQL
+                try
+                {
+                    string query = "INSERT INTO tasks (title, description, reminder, completed, twoFactorEnabled) VALUES (@title, @desc, @rem, @done, @twofa)";
+
+                    using (var conn = new MySqlConnection(connectionString))
+                    {
+                        conn.Open();
+
+                        using (var cmd = new MySqlCommand(query, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@title", task.Title);
+                            cmd.Parameters.AddWithValue("@desc", task.Description);
+                            cmd.Parameters.AddWithValue("@rem", task.Reminder);
+                            // convert booleans to ints for MySQL TINYINT(1) columns
+                            cmd.Parameters.AddWithValue("@done", task.Completed ? 1 : 0);
+                            cmd.Parameters.AddWithValue("@twofa", task.TwoFactorEnabled ? 1 : 0);
+
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    LogActivity("Task saved to MySQL: " + task.Title);
+                }
+                catch (Exception ex)
+                {
+                    // if DB insert fails, fall back to local storage and log the error
+                    LogActivity("MySQL insert failed: " + ex.Message);
+                }
+
+                // keep task in-memory for immediate use and persist to file as backup
                 tasks.Add(task);
 
-                // persist tasks
+                // persist tasks (backup)
                 SaveTasks();
 
                 LogActivity("Task added: " + task.Title);
@@ -426,7 +465,7 @@ private void LogActivity(string action)
                 return "Please type: delete task 1, delete task 2, etc.";
             }
 
-            // Quiz answer handling - must be at the top of GetResponse
+            // Quiz answer handling
             if (quizActive)
             {
                 int userAnswer = -1;
